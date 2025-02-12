@@ -290,6 +290,39 @@ io.on("connection", (socket) => {
     }
   });
 
+  socket.on("resetGame", ({ gameId }) => {
+    const game = games.get(gameId);
+    if (!game) {
+      socket.emit("error", "Game not found");
+      return;
+    }
+
+    // Reset game state
+    const categories = Object.keys(wordBank);
+    const randomCategory =
+      categories[Math.floor(Math.random() * categories.length)];
+    const initialWords =
+      wordBank[randomCategory]?.sort(() => 0.5 - Math.random()).slice(0, 4) ||
+      [];
+
+    game.player1Words = [];
+    game.player2Words = [];
+    game.currentPlayer = 1;
+    game.gameOver = false;
+    game.currentWordOptions = initialWords;
+    game.loveLetter = null;
+
+    // Broadcast reset state to all players
+    io.to(gameId).emit("gameStateUpdate", {
+      player1Words: game.player1Words,
+      player2Words: game.player2Words,
+      currentPlayer: game.currentPlayer,
+      currentWordOptions: game.currentWordOptions,
+      gameOver: game.gameOver,
+      loveLetter: null,
+    });
+  });
+
   // ✅ Handle player disconnection
   socket.on("disconnect", () => {
     console.log("User disconnected:", socket.id);
