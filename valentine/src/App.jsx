@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { io } from "socket.io-client";
 import { useParams, useNavigate } from "react-router-dom";
 import CustomCursor from "./components/CustomCursor";
+import HeartsBackground from "./components/HeartsBackground";
 
 const socket = io("http://localhost:5000", {
   withCredentials: true,
@@ -297,178 +298,184 @@ const App = () => {
   };
 
   return (
-    <div className="p-4 md:p-8 min-h-screen bg-gradient-to-r from-pink-200 to-purple-200 cursor-none">
-      <CustomCursor />
-      <div className="max-w-2xl mx-auto bg-white rounded-lg shadow-xl p-4 md:p-8">
-        {!gameId ? (
-          <div className="text-center">
-            <h1 className="text-3xl md:text-4xl font-bold text-pink-700 mb-4 md:mb-6">
-              Love Letter Builder
-            </h1>
-            <p className="text-gray-700 mb-4 md:mb-6 text-sm md:text-base max-w-md mx-auto">
-              A fun game for couples! Each player chooses 5 words, and our AI
-              will create a unique love letter—romantic or funny—based on your
-              choices. Share the link with your partner to start playing!
-            </p>
-            <button
-              onClick={createGame}
-              className="px-6 py-3 md:px-8 md:py-4 bg-gradient-to-r from-pink-500 to-purple-500 text-white font-semibold rounded-full text-lg hover:from-pink-600 hover:to-purple-600 transition-all"
-            >
-              Start Playing
-            </button>
-          </div>
-        ) : waitingForPlayer ? (
-          <div className="text-center">
-            <h2 className="text-xl md:text-2xl font-semibold text-purple-700 mb-3 md:mb-4">
-              Waiting for your parther to join...
-            </h2>
-            <p className="mb-3 md:mb-4 text-purple-700">
-              Share this link with your partner:
-            </p>
-            <div className="flex flex-col md:flex-row items-center gap-2 mb-4 text-purple-700">
-              <input
-                type="text"
-                value={gameUrl}
-                readOnly
-                className="w-full p-2 border rounded text-sm md:text-base"
-              />
-              <button
-                onClick={() => navigator.clipboard.writeText(gameUrl)}
-                className="w-full md:w-auto px-4 py-2 bg-purple-500 text-white rounded hover:bg-purple-600 text-sm md:text-base"
-              >
-                Copy
-              </button>
-            </div>
-          </div>
-        ) : (
-          <>
-            {/* Title with Heart Icon */}
-            <motion.h1
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-              className="text-3xl md:text-4xl font-bold text-pink-700 mb-4 md:mb-6 flex items-center justify-center gap-2 md:gap-3"
-            >
-              Love Letter Builder <Heart className="text-red-600" size={28} />
-            </motion.h1>
-
-            {/* Random Event Banner */}
-            {randomEvent && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.5 }}
-                className="text-center py-2 px-4 md:py-3 md:px-6 bg-pink-100 rounded-full mb-4 md:mb-6 text-pink-800 font-medium shadow-sm animate-bounce text-sm md:text-base"
-              >
-                {randomEvent}
-              </motion.div>
-            )}
-
-            {/* Player Status */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.3, duration: 0.5 }}
-              className="text-center mb-6 md:mb-8"
-            >
-              <h2 className="text-xl md:text-2xl font-semibold text-purple-700">
-                {!gameOver ? `Player ${currentPlayer}'s Turn` : "Game Over!"}
-              </h2>
-              <p className="text-gray-700 font-medium mt-1 md:mt-2 text-sm md:text-base">
-                {!gameOver && `Select a word to continue`}
-              </p>
-            </motion.div>
-
-            {/* Word Selection Area */}
-            {!gameOver && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5 }}
-                className="mb-6 md:mb-8"
-              >
-                <h3 className="text-lg md:text-xl font-semibold text-gray-800 mb-3 md:mb-4">
-                  Choose a word:
-                </h3>
-                {renderWordSelectionButtons()}
-              </motion.div>
-            )}
-
-            {/* Players' Selected Words */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.5, duration: 0.5 }}
-              className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6 mb-6 md:mb-8"
-            >
-              <div className="bg-pink-50 p-4 md:p-6 rounded-lg shadow-md">
-                <h3 className="text-lg md:text-xl font-semibold text-pink-700 mb-3 md:mb-4">
-                  Player 1's Words ({player1Words.length}/5)
-                </h3>
-                <ul className="space-y-1 md:space-y-2">
-                  {player1Words.map((word, index) => (
-                    <li
-                      key={index}
-                      className="text-pink-800 p-2 md:p-3 bg-pink-100 rounded-lg font-medium shadow-sm text-sm md:text-base"
-                    >
-                      {word}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              <div className="bg-purple-50 p-4 md:p-6 rounded-lg shadow-md">
-                <h3 className="text-lg md:text-xl font-semibold text-purple-700 mb-3 md:mb-4">
-                  Player 2's Words ({player2Words.length}/5)
-                </h3>
-                <ul className="space-y-1 md:space-y-2">
-                  {player2Words.map((word, index) => (
-                    <li
-                      key={index}
-                      className="text-purple-800 p-2 md:p-3 bg-purple-100 rounded-lg font-medium shadow-sm text-sm md:text-base"
-                    >
-                      {word}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </motion.div>
-
-            {/* Game Over and AI Letter Section */}
-            {gameOver && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5 }}
-                className="text-center"
-              >
-                <h2 className="text-2xl md:text-3xl font-bold text-pink-700 mb-4 md:mb-6">
-                  Your AI Love Letter:
-                </h2>
-
-                {loading ? (
-                  <div className="flex justify-center items-center py-6 md:py-8">
-                    <div className="animate-spin rounded-full h-8 w-8 md:h-10 md:w-10 border-4 border-pink-500 border-t-transparent"></div>
-                  </div>
-                ) : (
-                  <pre className="whitespace-pre-wrap bg-gradient-to-r from-pink-50 to-purple-50 p-4 md:p-8 rounded-lg text-gray-800 font-medium mb-6 md:mb-8 shadow-inner text-left text-sm md:text-base">
-                    {serverLoveLetter || aiLoveLetter}
-                  </pre>
-                )}
-
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={handleResetGame}
-                  className="px-6 py-3 md:px-8 md:py-4 bg-gradient-to-r from-pink-500 to-purple-500 text-white font-semibold rounded-full hover:from-pink-600 hover:to-purple-600 transition-all shadow-lg text-base md:text-lg"
+    <>
+      <HeartsBackground />
+      <div className="p-4 md:p-8 min-h-screen cursor-none flex justify-center">
+        <CustomCursor />
+        <div className="max-w-500 mx-auto bg-transparent p-4 md:p-8 mt-20">
+          {!gameId ? (
+            <div className="flex justify-center items-center mt-20">
+              <div className="text-center">
+                <h1 className="text-3xl md:text-5xl font-bold text-pink-700 mb-4 md:mb-6">
+                  Love Letter Builder
+                </h1>
+                <p className="text-gray-700 mb-4 md:mb-6 text-sm md:text-2xl max-w-md mx-auto">
+                  A fun game for couples! Each player chooses 5 words, and our
+                  AI will create a unique love letter—romantic or funny—based on
+                  your choices. Share the link with your partner to start
+                  playing!
+                </p>
+                <button
+                  onClick={createGame}
+                  className="px-6 py-3 md:px-8 md:py-4 bg-gradient-to-r from-pink-500 to-purple-500 text-white font-semibold rounded-full text-lg hover:from-pink-600 hover:to-purple-600 transition-all"
                 >
-                  Write Another Letter
-                </motion.button>
+                  Start Playing
+                </button>
+              </div>
+            </div>
+          ) : waitingForPlayer ? (
+            <div className="text-center">
+              <h2 className="text-xl md:text-2xl font-semibold text-purple-700 mb-3 md:mb-4">
+                Waiting for your parther to join...
+              </h2>
+              <p className="mb-3 md:mb-4 text-purple-700">
+                Share this link with your partner:
+              </p>
+              <div className="flex flex-col md:flex-row items-center gap-2 mb-4 text-purple-700">
+                <input
+                  type="text"
+                  value={gameUrl}
+                  readOnly
+                  className="w-full p-2 border rounded text-sm md:text-base"
+                />
+                <button
+                  onClick={() => navigator.clipboard.writeText(gameUrl)}
+                  className="w-full md:w-auto px-4 py-2 bg-purple-500 text-white rounded hover:bg-purple-600 text-sm md:text-base"
+                >
+                  Copy
+                </button>
+              </div>
+            </div>
+          ) : (
+            <>
+              {/* Title with Heart Icon */}
+              <motion.h1
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+                className="text-3xl md:text-4xl font-bold text-pink-700 mb-4 md:mb-6 flex items-center justify-center gap-2 md:gap-3"
+              >
+                Love Letter Builder <Heart className="text-red-600" size={28} />
+              </motion.h1>
+
+              {/* Random Event Banner */}
+              {randomEvent && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.5 }}
+                  className="text-center py-2 px-4 md:py-3 md:px-6 bg-pink-100 rounded-full mb-4 md:mb-6 text-pink-800 font-medium shadow-sm animate-bounce text-sm md:text-base"
+                >
+                  {randomEvent}
+                </motion.div>
+              )}
+
+              {/* Player Status */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.3, duration: 0.5 }}
+                className="text-center mb-6 md:mb-8"
+              >
+                <h2 className="text-xl md:text-2xl font-semibold text-purple-700">
+                  {!gameOver ? `Player ${currentPlayer}'s Turn` : "Game Over!"}
+                </h2>
+                <p className="text-gray-700 font-medium mt-1 md:mt-2 text-sm md:text-base">
+                  {!gameOver && `Select a word to continue`}
+                </p>
               </motion.div>
-            )}
-          </>
-        )}
+
+              {/* Word Selection Area */}
+              {!gameOver && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5 }}
+                  className="mb-6 md:mb-8"
+                >
+                  <h3 className="text-lg md:text-xl font-semibold text-gray-800 mb-3 md:mb-4">
+                    Choose a word:
+                  </h3>
+                  {renderWordSelectionButtons()}
+                </motion.div>
+              )}
+
+              {/* Players' Selected Words */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.5, duration: 0.5 }}
+                className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6 mb-6 md:mb-8"
+              >
+                <div className="bg-pink-50 p-4 md:p-6 rounded-lg shadow-md">
+                  <h3 className="text-lg md:text-xl font-semibold text-pink-700 mb-3 md:mb-4">
+                    Player 1's Words ({player1Words.length}/5)
+                  </h3>
+                  <ul className="space-y-1 md:space-y-2">
+                    {player1Words.map((word, index) => (
+                      <li
+                        key={index}
+                        className="text-pink-800 p-2 md:p-3 bg-pink-100 rounded-lg font-medium shadow-sm text-sm md:text-base"
+                      >
+                        {word}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                <div className="bg-purple-50 p-4 md:p-6 rounded-lg shadow-md">
+                  <h3 className="text-lg md:text-xl font-semibold text-purple-700 mb-3 md:mb-4">
+                    Player 2's Words ({player2Words.length}/5)
+                  </h3>
+                  <ul className="space-y-1 md:space-y-2">
+                    {player2Words.map((word, index) => (
+                      <li
+                        key={index}
+                        className="text-purple-800 p-2 md:p-3 bg-purple-100 rounded-lg font-medium shadow-sm text-sm md:text-base"
+                      >
+                        {word}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </motion.div>
+
+              {/* Game Over and AI Letter Section */}
+              {gameOver && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5 }}
+                  className="text-center"
+                >
+                  <h2 className="text-2xl md:text-3xl font-bold text-pink-700 mb-4 md:mb-6">
+                    Your AI Love Letter:
+                  </h2>
+
+                  {loading ? (
+                    <div className="flex justify-center items-center py-6 md:py-8">
+                      <div className="animate-spin rounded-full h-8 w-8 md:h-10 md:w-10 border-4 border-pink-500 border-t-transparent"></div>
+                    </div>
+                  ) : (
+                    <pre className="whitespace-pre-wrap bg-gradient-to-r from-pink-50 to-purple-50 p-4 md:p-8 rounded-lg text-gray-800 font-medium mb-6 md:mb-8 shadow-inner text-left text-sm md:text-base">
+                      {serverLoveLetter || aiLoveLetter}
+                    </pre>
+                  )}
+
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={handleResetGame}
+                    className="px-6 py-3 md:px-8 md:py-4 bg-gradient-to-r from-pink-500 to-purple-500 text-white font-semibold rounded-full hover:from-pink-600 hover:to-purple-600 transition-all shadow-lg text-base md:text-lg"
+                  >
+                    Write Another Letter
+                  </motion.button>
+                </motion.div>
+              )}
+            </>
+          )}
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 export default App;

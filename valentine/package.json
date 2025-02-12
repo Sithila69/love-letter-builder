@@ -19,6 +19,7 @@
     "socket.io": "^4.8.1",
     "socket.io-client": "^4.8.1",
     "tailwindcss": "^4.0.6",
+    "three": "^0.173.0",
     "uuid": "^11.0.5"
   },
   "devDependencies": {
