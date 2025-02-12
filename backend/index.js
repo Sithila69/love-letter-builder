@@ -32,6 +32,36 @@ app.use(express.json());
 const games = new Map();
 const wordBankPath = path.resolve("word-bank/word-bank.json");
 
+async function generateLoveLetter(player1Words, player2Words) {
+  try {
+    const response = await fetch(
+      "http://localhost:5000/api/loveletter/generate",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          player1Words,
+          player2Words,
+        }),
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return (
+      data.loveLetter || "Failed to generate love letter. Please try again!"
+    );
+  } catch (error) {
+    console.error("Error generating love letter:", error);
+    return "Error generating love letter: " + error.message;
+  }
+}
+
 // ✅ Load word bank with error handling
 let wordBank = {};
 try {
@@ -173,7 +203,7 @@ io.on("connection", (socket) => {
   });
 
   // ✅ Handle word selection
-  socket.on("selectWord", ({ gameId, word }) => {
+  socket.on("selectWord", async ({ gameId, word }) => {
     if (!gameId || !word) {
       socket.emit("error", "Game ID and word are required");
       return;
@@ -201,6 +231,14 @@ io.on("connection", (socket) => {
 
     if (game.player1Words.length === 5 && game.player2Words.length === 5) {
       game.gameOver = true;
+
+      // Generate love letter on server
+      const loveLetter = await generateLoveLetter(
+        game.player1Words,
+        game.player2Words
+      );
+      game.loveLetter = loveLetter;
+
       // Emit game over with final state
       io.to(gameId).emit("gameStateUpdate", {
         player1Words: game.player1Words,
@@ -208,6 +246,7 @@ io.on("connection", (socket) => {
         currentPlayer: game.currentPlayer,
         currentWordOptions: game.currentWordOptions,
         gameOver: true,
+        loveLetter: loveLetter,
       });
       return;
     }

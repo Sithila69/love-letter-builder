@@ -26,8 +26,13 @@ const App = () => {
   const [gameUrl, setGameUrl] = useState("");
   const [playerRole, setPlayerRole] = useState(null); // Will be either 'player1' or 'player2'
   const [playerId, setPlayerId] = useState(null);
+  const [serverLoveLetter, setServerLoveLetter] = useState("");
 
   const handleGenerateLoveLetter = async () => {
+    if (serverLoveLetter) {
+      setAiLoveLetter(serverLoveLetter);
+      return;
+    }
     setLoading(true);
 
     try {
@@ -146,7 +151,17 @@ const App = () => {
 
     function handleGameStateUpdate(gameState) {
       console.log("Game state update:", gameState);
-      updateGameState(gameState);
+      if (gameState.player1Words) setPlayer1Words(gameState.player1Words);
+      if (gameState.player2Words) setPlayer2Words(gameState.player2Words);
+      if (gameState.currentPlayer) setCurrentPlayer(gameState.currentPlayer);
+      if (gameState.currentWordOptions)
+        setCurrentWordOptions(gameState.currentWordOptions);
+      if (gameState.gameOver !== undefined) setGameOver(gameState.gameOver);
+      if (gameState.loveLetter) {
+        setServerLoveLetter(gameState.loveLetter);
+        setAiLoveLetter(gameState.loveLetter);
+        setLoading(false);
+      }
     }
 
     function handlePlayerDisconnected() {
@@ -203,11 +218,11 @@ const App = () => {
   }, [gameId, navigate]);
 
   // Add useEffect to automatically generate love letter when game is over
-  useEffect(() => {
-    if (gameOver && player1Words.length === 5 && player2Words.length === 5) {
-      handleGenerateLoveLetter();
-    }
-  }, [gameOver, player1Words.length, player2Words.length]);
+  // useEffect(() => {
+  //   if (gameOver && player1Words.length === 5 && player2Words.length === 5) {
+  //     handleGenerateLoveLetter();
+  //   }
+  // }, [gameOver, player1Words.length, player2Words.length]);
 
   const isPlayerTurn = () => {
     if (!playerRole || gameOver) return false;
@@ -430,7 +445,7 @@ const App = () => {
                   </div>
                 ) : (
                   <pre className="whitespace-pre-wrap bg-gradient-to-r from-pink-50 to-purple-50 p-8 rounded-lg text-gray-800 font-medium mb-8 shadow-inner text-left">
-                    {aiLoveLetter}
+                    {serverLoveLetter || aiLoveLetter}
                   </pre>
                 )}
 
