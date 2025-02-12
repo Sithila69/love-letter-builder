@@ -3,6 +3,7 @@ import { Heart } from "lucide-react";
 import { motion } from "framer-motion";
 import { io } from "socket.io-client";
 import { useParams, useNavigate } from "react-router-dom";
+import CustomCursor from "./components/CustomCursor";
 
 const socket = io("http://localhost:5000", {
   withCredentials: true,
@@ -296,24 +297,30 @@ const App = () => {
   };
 
   return (
-    <div className="p-4 md:p-8 min-h-screen bg-gradient-to-r from-pink-200 to-purple-200">
+    <div className="p-4 md:p-8 min-h-screen bg-gradient-to-r from-pink-200 to-purple-200 cursor-none">
+      <CustomCursor />
       <div className="max-w-2xl mx-auto bg-white rounded-lg shadow-xl p-4 md:p-8">
         {!gameId ? (
           <div className="text-center">
             <h1 className="text-3xl md:text-4xl font-bold text-pink-700 mb-4 md:mb-6">
               Love Letter Builder
             </h1>
+            <p className="text-gray-700 mb-4 md:mb-6 text-sm md:text-base max-w-md mx-auto">
+              A fun game for couples! Each player chooses 5 words, and our AI
+              will create a unique love letter—romantic or funny—based on your
+              choices. Share the link with your partner to start playing!
+            </p>
             <button
               onClick={createGame}
-              className="px-6 py-3 md:px-8 md:py-4 bg-gradient-to-r from-pink-500 to-purple-500 text-white font-semibold rounded-full text-lg"
+              className="px-6 py-3 md:px-8 md:py-4 bg-gradient-to-r from-pink-500 to-purple-500 text-white font-semibold rounded-full text-lg hover:from-pink-600 hover:to-purple-600 transition-all"
             >
-              Create New Game
+              Start Playing
             </button>
           </div>
         ) : waitingForPlayer ? (
           <div className="text-center">
             <h2 className="text-xl md:text-2xl font-semibold text-purple-700 mb-3 md:mb-4">
-              Waiting for player to join...
+              Waiting for your parther to join...
             </h2>
             <p className="mb-3 md:mb-4 text-purple-700">
               Share this link with your partner:
