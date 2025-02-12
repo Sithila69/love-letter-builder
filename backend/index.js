@@ -12,9 +12,12 @@ dotenv.config();
 
 const app = express();
 const httpServer = createServer(app);
+
+const allowedOrigins = process.env.ALLOWED_ORIGINS.split(",");
+
 const io = new Server(httpServer, {
   cors: {
-    origin: ["http://localhost:5173", "http://localhost:3000"],
+    origin: allowedOrigins,
     methods: ["GET", "POST"],
     credentials: true,
   },
@@ -22,7 +25,7 @@ const io = new Server(httpServer, {
 
 app.use(
   cors({
-    origin: ["http://localhost:5173", "http://localhost:3000"],
+    origin: allowedOrigins,
     credentials: true,
   })
 );
@@ -30,12 +33,12 @@ app.use(express.json());
 
 // Store active games
 const games = new Map();
-const wordBankPath = path.resolve("word-bank/word-bank.json");
+const wordBankPath = path.resolve(process.env.WORD_BANK_PATH);
 
 async function generateLoveLetter(player1Words, player2Words) {
   try {
     const response = await fetch(
-      "http://localhost:5000/api/loveletter/generate",
+      `${process.env.LOVE_LETTER_API_URL}/generate`,
       {
         method: "POST",
         headers: {

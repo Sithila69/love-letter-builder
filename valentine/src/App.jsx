@@ -30,44 +30,6 @@ const App = () => {
   const [playerId, setPlayerId] = useState(null);
   const [serverLoveLetter, setServerLoveLetter] = useState("");
 
-  const handleGenerateLoveLetter = async () => {
-    if (serverLoveLetter) {
-      setAiLoveLetter(serverLoveLetter);
-      return;
-    }
-    setLoading(true);
-
-    try {
-      const response = await fetch(
-        "http://localhost:5000/api/loveletter/generate",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            // Add CORS headers if needed
-            "Access-Control-Allow-Origin": "*",
-          },
-          body: JSON.stringify({
-            player1Words: player1Words,
-            player2Words: player2Words,
-          }),
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
-      setAiLoveLetter(data.loveLetter || "AI didn't respond. Try again!");
-    } catch (error) {
-      console.error("Error fetching love letter:", error);
-      setAiLoveLetter("Error: " + error.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const romanticEvents = [
     "🌹 A wild rose appeared!",
     "🎻 A violin player tripped while serenading!",
@@ -89,7 +51,7 @@ const App = () => {
       if (gameId) {
         try {
           const response = await fetch(
-            `http://localhost:5000/api/game/${gameId}`
+            `${process.env.REACT_APP_API_URL}/api/game/${gameId}`
           );
           const data = await response.json();
 
@@ -108,7 +70,7 @@ const App = () => {
     };
 
     checkGameExists();
-  }, [gameId, navigate]);
+  }, [gameId, navigate, socket]);
 
   useEffect(() => {
     function handleConnect() {
