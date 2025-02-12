@@ -6,6 +6,7 @@ import dotenv from "dotenv";
 import fs from "fs";
 import path from "path";
 import { v4 as uuidv4 } from "uuid";
+import loveletterRoutes from "./routes/loveLetter.js";
 
 dotenv.config();
 
@@ -81,7 +82,11 @@ io.on("connection", (socket) => {
     socket.join(gameId);
 
     console.log(`Game ${gameId} created by ${socket.id}`);
-    socket.emit("gameCreated", { gameId, gameState: gameData });
+    socket.emit("gameCreated", {
+      gameId,
+      gameState: gameData,
+      role: "player1",
+    });
   });
 
   socket.on("joinGame", (gameId) => {
@@ -106,6 +111,13 @@ io.on("connection", (socket) => {
 
     socket.join(gameId);
 
+    socket.emit("gameJoined", {
+      gameId,
+      players: game.players.length,
+      gameState: game,
+      role: "player2",
+    });
+
     // Send updated game state
     io.to(gameId).emit("gameJoined", {
       gameId,
@@ -121,7 +133,12 @@ io.on("connection", (socket) => {
 
     // Start game when 2 players are confirmed
     if (game.players.length === 2) {
-      io.to(gameId).emit("gameStart", { gameState: game });
+      game.players.forEach((player) => {
+        io.to(player.id).emit("gameStart", {
+          gameState: game,
+          role: player.isCreator ? "player1" : "player2",
+        });
+      });
     }
   });
 
@@ -144,13 +161,14 @@ io.on("connection", (socket) => {
     socket.join(gameId);
 
     // Send updated game state
-    io.to(gameId).emit("gameStateUpdate", {
+    io.to(socket.id).emit("gameStateUpdate", {
       player1Words: game.player1Words,
       player2Words: game.player2Words,
       currentPlayer: game.currentPlayer,
       currentWordOptions: game.currentWordOptions,
       players: game.players.length,
       gameOver: game.gameOver,
+      role: existingPlayer.isCreator ? "player1" : "player2",
     });
   });
 
@@ -162,6 +180,7 @@ io.on("connection", (socket) => {
     }
 
     const game = games.get(gameId);
+
     if (!game) {
       socket.emit("error", "Game not found");
       return;
@@ -178,6 +197,19 @@ io.on("connection", (socket) => {
       game.player1Words.push(word);
     } else {
       game.player2Words.push(word);
+    }
+
+    if (game.player1Words.length === 5 && game.player2Words.length === 5) {
+      game.gameOver = true;
+      // Emit game over with final state
+      io.to(gameId).emit("gameStateUpdate", {
+        player1Words: game.player1Words,
+        player2Words: game.player2Words,
+        currentPlayer: game.currentPlayer,
+        currentWordOptions: game.currentWordOptions,
+        gameOver: true,
+      });
+      return;
     }
 
     game.currentPlayer = game.currentPlayer === 1 ? 2 : 1;
@@ -236,6 +268,8 @@ io.on("connection", (socket) => {
     }
   });
 });
+
+app.use("/api/loveletter", loveletterRoutes);
 
 // ✅ Start server with error handling
 const PORT = process.env.PORT || 5000;

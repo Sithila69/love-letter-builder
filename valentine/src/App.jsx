@@ -24,6 +24,7 @@ const App = () => {
   const [isConnected, setIsConnected] = useState(false);
   const [waitingForPlayer, setWaitingForPlayer] = useState(true);
   const [gameUrl, setGameUrl] = useState("");
+  const [playerRole, setPlayerRole] = useState(null); // Will be either 'player1' or 'player2'
   const [playerId, setPlayerId] = useState(null);
 
   const handleGenerateLoveLetter = async () => {
@@ -114,9 +115,10 @@ const App = () => {
       }
     }
 
-    function handleGameCreated({ gameId, gameState }) {
-      console.log("Game created:", gameId);
+    function handleGameCreated({ gameId, gameState, role }) {
+      console.log("Game created:", gameId, "role:", role);
       setWaitingForPlayer(true);
+      setPlayerRole(role); // Set role when creating game (should be 'player1')
       const newGameUrl = `${window.location.origin}/game/${gameId}`;
       setGameUrl(newGameUrl);
       navigate(`/game/${gameId}`);
@@ -133,8 +135,9 @@ const App = () => {
       setWaitingForPlayer(players !== 2);
     }
 
-    function handleGameStart({ gameState }) {
-      console.log("Game starting with state:", gameState);
+    function handleGameStart({ gameState, role }) {
+      console.log("Game starting with state:", gameState, "role", role);
+      setPlayerRole(role); // Set the player's role when joining
       setWaitingForPlayer(false);
       if (gameState) {
         updateGameState(gameState);
@@ -199,6 +202,23 @@ const App = () => {
     };
   }, [gameId, navigate]);
 
+  // Add useEffect to automatically generate love letter when game is over
+  useEffect(() => {
+    if (gameOver && player1Words.length === 5 && player2Words.length === 5) {
+      handleGenerateLoveLetter();
+    }
+  }, [gameOver, player1Words.length, player2Words.length]);
+
+  const isPlayerTurn = () => {
+    if (!playerRole || gameOver) return false;
+    if (playerRole === "player1" && player1Words.length === 5) return false;
+    if (playerRole === "player2" && player2Words.length === 5) return false;
+    return (
+      (currentPlayer === 1 && playerRole === "player1") ||
+      (currentPlayer === 2 && playerRole === "player2")
+    );
+  };
+
   const createGame = () => {
     console.log("Creating new game");
     socket.emit("createGame");
@@ -213,6 +233,31 @@ const App = () => {
       word,
     });
   };
+  // In your render method, update the word selection buttons:
+  const renderWordSelectionButtons = () => (
+    <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+      {currentWordOptions.map((word, index) => {
+        const disabled = !isPlayerTurn() || gameOver;
+        return (
+          <motion.button
+            key={index}
+            whileHover={!disabled ? { scale: 1.05 } : {}}
+            whileTap={!disabled ? { scale: 0.95 } : {}}
+            onClick={() => !disabled && handleWordSelect(word)}
+            className={`p-4 text-base font-medium text-white bg-gradient-to-r from-pink-500 to-purple-500 rounded-lg transition-all duration-200 shadow-md
+              ${
+                disabled
+                  ? "opacity-50 cursor-not-allowed"
+                  : "hover:from-pink-600 hover:to-purple-600"
+              }`}
+            disabled={disabled}
+          >
+            {word}
+          </motion.button>
+        );
+      })}
+    </div>
+  );
 
   useEffect(() => {
     if (Math.random() < 0.4) {
@@ -311,7 +356,7 @@ const App = () => {
                 <h3 className="text-xl font-semibold text-gray-800 mb-4">
                   Choose a word:
                 </h3>
-                <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+                {/* <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
                   {currentWordOptions.map((word, index) => (
                     <motion.button
                       key={index}
@@ -323,7 +368,8 @@ const App = () => {
                       {word}
                     </motion.button>
                   ))}
-                </div>
+                </div> */}
+                {renderWordSelectionButtons()}
               </motion.div>
             )}
 
@@ -351,7 +397,7 @@ const App = () => {
               </div>
               <div className="bg-purple-50 p-6 rounded-lg shadow-md">
                 <h3 className="text-xl font-semibold text-purple-700 mb-4">
-                  Player 2's Words ({player2Words.length}/4)
+                  Player 2's Words ({player2Words.length}/5)
                 </h3>
                 <ul className="space-y-2">
                   {player2Words.map((word, index) => (
