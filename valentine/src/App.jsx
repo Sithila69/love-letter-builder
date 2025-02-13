@@ -261,9 +261,9 @@ const App = () => {
 
   return (
     <>
+      <CustomCursor />
       <HeartsBackground />
       <div className="p-4 md:p-8 min-h-screen cursor-none flex justify-center">
-        <CustomCursor />
         <div className="max-w-500 mx-auto bg-transparent p-4 md:p-8 mt-20">
           {!gameId ? (
             <div className="flex justify-center items-center mt-20">
