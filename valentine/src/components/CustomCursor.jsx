@@ -4,16 +4,26 @@ const CustomCursor = () => {
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [trail, setTrail] = useState([]);
   const [isClicking, setIsClicking] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(
+        window.matchMedia("(hover: none) and (pointer: coarse)").matches
+      );
+    };
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+
+    if (isMobile) return;
+
     let lastUpdate = 0;
-    const TRAIL_INTERVAL = 50; // Adjust this to control trail density
+    const TRAIL_INTERVAL = 50;
 
     const updatePosition = (e) => {
       const now = Date.now();
       setPosition({ x: e.clientX, y: e.clientY });
 
-      // Add new trail heart if enough time has passed
       if (now - lastUpdate > TRAIL_INTERVAL) {
         setTrail((prevTrail) =>
           [
@@ -22,10 +32,10 @@ const CustomCursor = () => {
               x: e.clientX,
               y: e.clientY,
               id: now,
-              size: Math.random() * 8 + 4, // Random size between 4-12px
+              size: Math.random() * 8 + 4,
             },
           ].slice(-15)
-        ); // Keep only last 15 hearts
+        );
         lastUpdate = now;
       }
     };
@@ -33,12 +43,9 @@ const CustomCursor = () => {
     const handleMouseDown = () => setIsClicking(true);
     const handleMouseUp = () => setIsClicking(false);
 
-    // Clean old trail hearts periodically
     const cleanupInterval = setInterval(() => {
       setTrail((prevTrail) =>
-        prevTrail.filter(
-          (heart) => Date.now() - heart.id < 1000 // Remove hearts older than 1 second
-        )
+        prevTrail.filter((heart) => Date.now() - heart.id < 1000)
       );
     }, 100);
 
@@ -53,8 +60,9 @@ const CustomCursor = () => {
       document.removeEventListener("mouseup", handleMouseUp);
       document.body.style.cursor = "default";
       clearInterval(cleanupInterval);
+      window.removeEventListener("resize", checkMobile);
     };
-  }, []);
+  }, [isMobile]);
 
   const TrailingHeart = ({ x, y, size, id }) => {
     const age = Date.now() - id;
@@ -79,21 +87,21 @@ const CustomCursor = () => {
         >
           <path
             d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
-            fill="#fda4af" // Tailwind rose-300
+            fill="#fda4af"
           />
         </svg>
       </div>
     );
   };
 
+  if (isMobile) return null;
+
   return (
     <>
-      {/* Trail hearts */}
       {trail.map((heart) => (
         <TrailingHeart key={heart.id} {...heart} />
       ))}
 
-      {/* Main cursor heart */}
       <div
         className={`fixed pointer-events-none z-50 transition-transform duration-75 ${
           isClicking ? "scale-75" : "scale-100"
@@ -104,10 +112,7 @@ const CustomCursor = () => {
           transform: "translate(-50%, -50%)",
         }}
       >
-        {/* Outer glow effect */}
         <div className="absolute inset-0 animate-pulse bg-pink-200 rounded-full blur-md opacity-50 w-8 h-8" />
-
-        {/* Main heart */}
         <div
           className={`relative w-8 h-8 transition-transform duration-150 ${
             isClicking ? "scale-90" : "scale-100"
@@ -116,14 +121,13 @@ const CustomCursor = () => {
           <svg viewBox="0 0 24 24" className="w-full h-full">
             <path
               d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
-              fill="#ec4899" // Tailwind pink-500
+              fill="#ec4899"
               className="drop-shadow-md"
             />
           </svg>
         </div>
       </div>
 
-      {/* Add floating animation */}
       <style jsx global>{`
         @keyframes float {
           0% {
