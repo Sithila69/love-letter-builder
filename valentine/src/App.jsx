@@ -32,6 +32,7 @@ const App = () => {
   const [playerRole, setPlayerRole] = useState(null); // Will be either 'player1' or 'player2'
   const [playerId, setPlayerId] = useState(null);
   const [serverLoveLetter, setServerLoveLetter] = useState("");
+  const [currentPlayerId, setCurrentPlayerId] = useState(null);
 
   const romanticEvents = [
     "🌹 A wild rose appeared!",
@@ -98,9 +99,10 @@ const App = () => {
       // Initialize game state
       updateGameState(gameState);
     }
-
-    function handleGameJoined({ players, gameState }) {
+    function handleGameJoined({ players, gameState, role, playerId }) {
       console.log("Game joined, players:", players, "state:", gameState);
+      setPlayerRole(role);
+      setPlayerId(playerId); // Store the player's ID
       if (gameState) {
         updateGameState(gameState);
       }
@@ -110,6 +112,7 @@ const App = () => {
     function handleGameStart({ gameState, role }) {
       console.log("Game starting with state:", gameState, "role", role);
       setPlayerRole(role); // Set the player's role when joining
+      setPlayerId(playerId);
       setWaitingForPlayer(false);
       if (gameState) {
         updateGameState(gameState);
@@ -124,6 +127,9 @@ const App = () => {
       if (gameState.currentWordOptions)
         setCurrentWordOptions(gameState.currentWordOptions);
       if (gameState.gameOver !== undefined) setGameOver(gameState.gameOver);
+      if (gameState.currentPlayerId) {
+        setCurrentPlayerId(gameState.currentPlayerId);
+      }
       if (gameState.loveLetter) {
         setServerLoveLetter(gameState.loveLetter);
         setAiLoveLetter(gameState.loveLetter);
@@ -200,7 +206,6 @@ const App = () => {
       (currentPlayer === 2 && playerRole === "player2")
     );
   };
-
   const createGame = () => {
     console.log("Creating new game");
     socket.emit("createGame");
@@ -295,6 +300,8 @@ const App = () => {
                 serverLoveLetter={serverLoveLetter}
                 aiLoveLetter={aiLoveLetter}
                 handleResetGame={handleResetGame}
+                playerId={playerId}
+                currentPlayerId={currentPlayerId}
               />
             )}
           </div>
