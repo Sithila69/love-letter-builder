@@ -215,7 +215,12 @@ const App = () => {
       word,
     });
   };
-  // In your render method, update the word selection buttons:
+
+  const playSound = () => {
+    const audio = new Audio("/bmw-bong.mp3");
+    audio.play();
+  };
+
   const renderWordSelectionButtons = () => (
     <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
       {currentWordOptions.map((word, index) => {
@@ -225,7 +230,7 @@ const App = () => {
             key={index}
             whileHover={!disabled ? { scale: 1.05 } : {}}
             whileTap={!disabled ? { scale: 0.95 } : {}}
-            onClick={() => !disabled && handleWordSelect(word)}
+            onClick={() => !disabled && (handleWordSelect(word), playSound())}
             className={`p-4 text-base font-medium text-white bg-gradient-to-r from-pink-500 to-purple-500 rounded-lg transition-all duration-200 shadow-md
               ${
                 disabled
