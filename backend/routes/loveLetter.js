@@ -54,46 +54,76 @@ router.post("/generate", async (req, res) => {
         feature: player2Words[1],
         feeling: player2Words[2],
         nickname: player2Words[3],
-        closing: player2Words[4], // Added for player2's 5th word
+        closing: player2Words[4],
       },
     };
 
     const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
-    const prompt = `Write a playful and romantic love letter that's both humorous and charming. 
-    
-    Use these exact words in a natural way:
-    
-    From Player 1:
-    - Action: "${wordContext.player1.action}"
-    - Quality: "${wordContext.player1.quality}"
-    - Adventure: "${wordContext.player1.adventure}"
-    - Promise: "${wordContext.player1.promise}"
-    - Signature: "${wordContext.player1.signature}"
-    
-    From Player 2:
-    - Pet Name: "${wordContext.player2.petName}"
-    - Feature: "${wordContext.player2.feature}"
-    - Feeling: "${wordContext.player2.feeling}"
-    - Nickname: "${wordContext.player2.nickname}"
-    - Closing: "${wordContext.player2.closing}"
+    const prompt = `You are an expert love letter writer. Write a charming and playful love letter incorporating specific words naturally into the text. Follow this exact structure:
 
-    Guidelines:
-    - Make it whimsical and light-hearted
-    - Include some humor and playful exaggeration
-    - Maintain a romantic undertone
-    - Use creative metaphors or similes
-    - Keep it between 150-200 words
-    - Format it as a proper letter with Dear [Pet Name] and signed with the Signature
-    - Make natural transitions between the words
-    - Include at least one silly or over-the-top declaration of love
-    - Try to incorporate the Closing word near the end of the letter before the signature
+1. Start with "Dear [Pet Name]," on its own line
+2. Write 3-4 paragraphs of romantic content
+3. End with "Love," on its own line
+4. Sign with the signature word on the final line
 
-    The letter should feel cohesive and flow naturally, not just string the words together.`;
+Required words to include (use exact spelling and integrate naturally):
+FROM PLAYER 1:
+- Action word: "${wordContext.player1.action}"
+- Quality: "${wordContext.player1.quality}"
+- Adventure: "${wordContext.player1.adventure}"
+- Promise: "${wordContext.player1.promise}"
+- Signature: "${wordContext.player1.signature}"
+
+FROM PLAYER 2:
+- Pet Name: "${wordContext.player2.petName}" (use in greeting)
+- Feature: "${wordContext.player2.feature}"
+- Feeling: "${wordContext.player2.feeling}"
+- Nickname: "${wordContext.player2.nickname}"
+- Closing: "${wordContext.player2.closing}" (use near the end)
+
+Style requirements:
+- Write 150-200 words
+- Use warm, affectionate tone
+- Include gentle humor
+- Make one playfully dramatic declaration of love
+- Maintain proper letter formatting with clear paragraphs
+- Ensure natural flow between sentences
+- Avoid forced or awkward word placement
+
+DO NOT:
+- Include the word lists in the output
+- Use placeholder text
+- Break from the letter format
+- End abruptly
+- Make meta-comments about the writing
+
+Example structure:
+Dear [Pet Name],
+
+[First paragraph with some required words]
+
+[Second paragraph with more required words]
+
+[Final paragraph with remaining words and closing]
+
+Love,
+[Signature]`;
 
     const result = await model.generateContent(prompt);
     const response = await result.response;
     const text = response.text();
+
+    // Validate the response has minimum components
+    if (
+      !text.includes("Dear") ||
+      !text.includes("Love,") ||
+      text.length < 100 ||
+      text.includes("Player 1") ||
+      text.includes("Player 2")
+    ) {
+      throw new Error("Generated letter does not meet quality requirements");
+    }
 
     // Cache the generated letter if we have a gameId
     if (gameId) {
@@ -115,7 +145,6 @@ router.post("/generate", async (req, res) => {
   }
 });
 
-// Add an endpoint to retrieve cached letter
 router.get("/letter/:gameId", (req, res) => {
   const { gameId } = req.params;
 

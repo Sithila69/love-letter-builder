@@ -6,7 +6,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import CustomCursor from "./components/CustomCursor";
 import HeartsBackground from "./components/HeartsBackground";
 
-const socket = io("http://localhost:5000", {
+const socket = io("https://lovelettergenerator-production.up.railway.app", {
   withCredentials: true,
   transports: ["websocket", "polling"],
 });
@@ -51,7 +51,7 @@ const App = () => {
       if (gameId) {
         try {
           const response = await fetch(
-            `${process.env.REACT_APP_API_URL}/api/game/${gameId}`
+            `https://lovelettergenerator-production.up.railway.app/api/game/${gameId}`
           );
           const data = await response.json();
 
