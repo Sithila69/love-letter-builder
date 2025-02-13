@@ -13,7 +13,13 @@ const GameUI = ({
   serverLoveLetter,
   aiLoveLetter,
   handleResetGame,
+  playerRole,
+  playerId, // Add this
+  currentPlayerId, // Add this
 }) => {
+  const isPlayer1 = playerRole === "player1";
+  const isPlayerTurn = currentPlayerId === playerId;
+
   return (
     <div className="max-w-4xl mx-auto p-6 md:p-10">
       {/* Game Header */}
@@ -50,9 +56,13 @@ const GameUI = ({
           className="bg-white/5 backdrop-blur-lg rounded-xl p-6 mb-8 text-center"
         >
           <h2 className="text-2xl font-semibold text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-purple-400">
-            Player {currentPlayer}'s Turn
+            {isPlayerTurn ? "Your Turn" : "Your Partner's Turn"}
           </h2>
-          <p className="text-gray-300 mt-2">Select a word to continue</p>
+          <p className="text-gray-300 mt-2">
+            {isPlayerTurn
+              ? "Select a word to continue"
+              : "Waiting for your partner to choose..."}
+          </p>
         </motion.div>
       )}
 
@@ -65,9 +75,11 @@ const GameUI = ({
           className="bg-white/5 backdrop-blur-lg rounded-xl p-6 mb-8"
         >
           <h3 className="text-xl font-semibold text-pink-400 mb-4">
-            Choose your word:
+            {isPlayerTurn ? "Choose your word:" : "Your partner is choosing..."}
           </h3>
-          <div className="grid gap-2">{renderWordSelectionButtons()}</div>
+          {isPlayerTurn && (
+            <div className="grid gap-2">{renderWordSelectionButtons()}</div>
+          )}
         </motion.div>
       )}
 
@@ -78,16 +90,16 @@ const GameUI = ({
         transition={{ delay: 0.5 }}
         className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8"
       >
-        {/* Player 1 Words */}
+        {/* Your Words */}
         <div className="bg-white/5 backdrop-blur-lg rounded-xl p-6">
           <h3 className="text-xl font-semibold text-pink-400 mb-4 flex items-center gap-2">
-            Player 1's Words
+            Your Words
             <span className="text-sm bg-pink-500/20 px-2 py-1 rounded-full">
-              {player1Words.length}/5
+              {isPlayer1 ? player1Words.length : player2Words.length}/5
             </span>
           </h3>
           <div className="space-y-2">
-            {player1Words.map((word, index) => (
+            {(isPlayer1 ? player1Words : player2Words).map((word, index) => (
               <div
                 key={index}
                 className="bg-pink-500/10 text-pink-300 p-3 rounded-lg font-medium"
@@ -98,16 +110,16 @@ const GameUI = ({
           </div>
         </div>
 
-        {/* Player 2 Words */}
+        {/* Partner's Words */}
         <div className="bg-white/5 backdrop-blur-lg rounded-xl p-6">
           <h3 className="text-xl font-semibold text-purple-400 mb-4 flex items-center gap-2">
-            Player 2's Words
+            Partner's Words
             <span className="text-sm bg-purple-500/20 px-2 py-1 rounded-full">
-              {player2Words.length}/5
+              {isPlayer1 ? player2Words.length : player1Words.length}/5
             </span>
           </h3>
           <div className="space-y-2">
-            {player2Words.map((word, index) => (
+            {(isPlayer1 ? player2Words : player1Words).map((word, index) => (
               <div
                 key={index}
                 className="bg-purple-500/10 text-purple-300 p-3 rounded-lg font-medium"

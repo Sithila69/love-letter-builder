@@ -149,6 +149,7 @@ io.on("connection", (socket) => {
       players: game.players.length,
       gameState: game,
       role: "player2",
+      playerId: socket.id,
     });
 
     // Send updated game state
@@ -202,6 +203,7 @@ io.on("connection", (socket) => {
       players: game.players.length,
       gameOver: game.gameOver,
       role: existingPlayer.isCreator ? "player1" : "player2",
+      currentPlayerId: game.players[game.currentPlayer - 1].id,
     });
   });
 
