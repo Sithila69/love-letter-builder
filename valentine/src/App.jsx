@@ -9,9 +9,9 @@ import LandingPage from "./components/LandingPage";
 import GameUI from "./components/GameUi";
 import "./App.css";
 
-const LOVE_LETTER_API_URL = process.env.LOVE_LETTER_API_URL;
+const VITE_LOVE_LETTER_API_URL = import.meta.env.VITE_LOVE_LETTER_API_URL;
 
-const socket = io(`${LOVE_LETTER_API_URL}`, {
+const socket = io(`${VITE_LOVE_LETTER_API_URL}`, {
   withCredentials: true,
   transports: ["websocket", "polling"],
 });
@@ -56,7 +56,7 @@ const App = () => {
       if (gameId) {
         try {
           const response = await fetch(
-            `${LOVE_LETTER_API_URL}api/game/${gameId}`
+            `${VITE_LOVE_LETTER_API_URL}api/game/${gameId}`
           );
           const data = await response.json();
 
