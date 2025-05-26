@@ -9,7 +9,7 @@ import LandingPage from "./components/LandingPage";
 import GameUI from "./components/GameUi";
 import "./App.css";
 
-const socket = io("https://lovelettergenerator-production.up.railway.app", {
+const socket = io(`${LOVE_LETTER_API_URL}`, {
   withCredentials: true,
   transports: ["websocket", "polling"],
 });
@@ -17,7 +17,7 @@ const socket = io("https://lovelettergenerator-production.up.railway.app", {
 const App = () => {
   const { gameId } = useParams();
   const navigate = useNavigate();
-
+  const LOVE_LETTER_API_URL = process.env.LOVE_LETTER_API_URL;
   const [player1Words, setPlayer1Words] = useState([]);
   const [player2Words, setPlayer2Words] = useState([]);
   const [currentPlayer, setCurrentPlayer] = useState(1);
@@ -55,7 +55,7 @@ const App = () => {
       if (gameId) {
         try {
           const response = await fetch(
-            `https://lovelettergenerator-production.up.railway.app/api/game/${gameId}`
+            `${LOVE_LETTER_API_URL}api/game/${gameId}`
           );
           const data = await response.json();
 
